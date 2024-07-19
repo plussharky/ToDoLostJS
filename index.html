@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button id="toggleCategoryManagementButton">Manage Categories</button>
+    <div id="overlay" class="overlay"></div>
+    <div id="categoryManagement" class="modal">
+        <span id="closeCategoryManagementButton" class="close-button">&times;</span>
+        <input type="text" id="newCategoryInput" placeholder="Add new category">
+        <button id="addCategoryButton">Add Category</button>
+        <ul id="categoryList"></ul>
+    </div>    
+    <div class="container">
+        <h1>To-Do List</h1>
+        <input type="text" id="taskInput" placeholder="Enter a new task">
+        <input list="categories" id="categoryInput" placeholder="Enter or select a category">
+        <datalist id="categories">
+        </datalist>
+        <select id="priorityInput">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+        <button id="addTaskButton">Add Task</button>
+        <ul id="taskList"></ul>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
