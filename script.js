@@ -6,17 +6,17 @@ class Task {
         this.completed = completed;
         this.taskItem = null;
 
-        taskStrorage.push(this);
+        TaskManager.taskStrorage.push(this);
     }
 
     createElement() {
         this.taskItem = document.createElement('li');
-        this.taskItem.className = `task ${this.priority} ${this.category}`;
+        this.taskItem.className = `task ${this.priority} ${this.category.name}`;
         if (this.completed) {
             this.taskItem.classList.add('completed');
         }
         this.taskItem.innerHTML = `
-            <span>${this.text}</span>
+            <span class="taskText">${this.text}</span>
             <div>
                 <select class='prioritySelector'>
                     ${Task.createOptionElements(this.priority)}
@@ -69,7 +69,7 @@ class Category {
         const categoryItem = document.createElement('li');
         categoryItem.className = 'category-item';
         categoryItem.innerHTML = `
-            <span class="category-label" style="background-color:${category.color}">${category.name}</span>
+            <span class="categoryLabel" style="background-color:${category.color}">${category.name}</span>
             <button class="editCategoryButton">Edit</button>
             <button class="deleteCategoryButton">Delete</button>
         `;
@@ -105,6 +105,7 @@ class TaskManager {
         this.overlay.onclick = () => this.toggleCategoryManagement();
 
         this.categories = [];
+        this.taskStrorage = [];
         this.options = ['high', 'medium', 'low'];
 
         this.loadCategories();
@@ -218,8 +219,10 @@ class TaskManager {
 
     static deleteTask(event) {
         event.stopPropagation();
-        event.target.closest('li').remove();
-        this.saveTasks();
+        const taskItem = event.target.closest('li');
+        TaskManager.taskStrorage = TaskManager.taskStrorage.filter(task => task.text !== taskItem.querySelector('.taskText').textContent)
+        taskItem.remove();
+        TaskManager.saveTasks();
     }
 
     static editTask(event) {
@@ -269,17 +272,7 @@ class TaskManager {
     }
 
     static saveTasks() {
-     //   let tasks = Array.from(document.querySelectorAll('.task')).map(taskItem => {
-     //       const text = taskItem.querySelector('span').textContent;
-     //       const priority = taskItem.querySelector('.prioritySelector').value;
-     //       const category = taskItem.querySelector('.categoryLabel')?.textContent || '';
-      //      const completed = taskItem.classList.contains('completed');
-      //      return new Task(text, priority, category, completed);
-     //   });
-
-        let tasks = taskStrorage;
-
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        localStorage.setItem('tasks', JSON.stringify(this.taskStrorage));
     }
 
     static saveCategories() {
@@ -291,7 +284,7 @@ class TaskManager {
         tasks.forEach(taskData => {
             const task = new Task(taskData.text, taskData.priority, taskData.category, taskData.completed);
             this.taskList.appendChild(task.createElement());
-            taskStrorage.add(task);
+            this.taskStrorage.push(task);
         });
     }
 
@@ -312,5 +305,4 @@ class TaskManager {
     }
 }
 
-const taskStrorage = [];
 window.onload = () => TaskManager.initialization();

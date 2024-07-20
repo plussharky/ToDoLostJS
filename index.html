@@ -7,26 +7,29 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <button id="toggleCategoryManagementButton">Manage Categories</button>
+    
     <div id="overlay" class="overlay"></div>
     <div id="categoryManagement" class="modal">
-        <span id="closeCategoryManagementButton" class="close-button">&times;</span>
-        <input type="text" id="newCategoryInput" placeholder="Add new category">
-        <button id="addCategoryButton">Add Category</button>
-        <ul id="categoryList"></ul>
+        <div class="modal-content">
+            <span id="closeCategoryManagementButton" class="close-button">&times;</span>
+            <input type="text" id="newCategoryInput" placeholder="Add new category" class="input-field">
+            <button id="addCategoryButton" class="primary-button">Add Category</button>
+            <ul id="categoryList"></ul>
+        </div>
     </div>    
     <div class="container">
         <h1>To-Do List</h1>
-        <input type="text" id="taskInput" placeholder="Enter a new task">
-        <input list="categories" id="categoryInput" placeholder="Enter or select a category">
+        <input type="text" id="taskInput" placeholder="Enter a new task" class="input-field">
+        <input list="categories" id="categoryInput" placeholder="Enter or select a category" class="input-field">
         <datalist id="categories">
         </datalist>
-        <select id="priorityInput">
+        <select id="priorityInput" class="input-field">
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="low">Low</option>
         </select>
-        <button id="addTaskButton">Add Task</button>
+        <button id="toggleCategoryManagementButton" class="primary-button">Manage Categories</button>
+        <button id="addTaskButton" class="primary-button">Add Task</button>
         <ul id="taskList"></ul>
     </div>
     <script src="script.js"></script>
