@@ -30,7 +30,15 @@
         </select>
         <button id="toggleCategoryManagementButton" class="primary-button">Manage Categories</button>
         <button id="addTaskButton" class="primary-button">Add Task</button>
-        <ul id="taskList"></ul>
+        <div class="task-list-header">
+            <div class="header-item">
+                <button id="sortByCategoryButton">Sort by Category</button>
+            </div>
+            <div class="header-item">
+                <button id="sortByPriorityButton">Sort by Priority</button>
+            </div>
+        </div>
+        <ul id="taskList" class="task-list"></ul>
     </div>
     <script src="script.js"></script>
 </body>

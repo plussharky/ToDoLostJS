@@ -1,12 +1,12 @@
 class Task {
+    static draggedElement = null;
+
     constructor(text, priority = 'medium', category = '', completed = false) {
         this.text = text;
         this.priority = priority;
         this.category = category;
         this.completed = completed;
         this.taskItem = null;
-
-        TaskManager.taskStrorage.push(this);
     }
 
     createElement() {
@@ -26,8 +26,9 @@ class Task {
                 <button class="editTaskButton">Edit</button>
             </div>
         `;
-
+        this.taskItem.draggable = true;
         Task.addEventListeners(this.taskItem);
+        Task.addDragEventListeners(this.taskItem);
 
         return this.taskItem;
     }
@@ -48,6 +49,56 @@ class Task {
 
     static toggleTask(event) {
         event.target.closest('li').classList.toggle('completed');
+    }
+
+    static addDragEventListeners(taskItem) {
+        taskItem.addEventListener('dragstart', Task.handleDragStart);
+        taskItem.addEventListener('dragover', Task.handleDragOver);
+        taskItem.addEventListener('drop', Task.handleDrop);
+        taskItem.addEventListener('dragend', Task.handleDragEnd);
+    }
+    
+    static handleDragStart(event) {
+        event.target.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/html', event.target.innerHTML);
+        Task.draggedElement = event.target;
+    }
+    
+    static handleDragOver(event) {
+        if (event.preventDefault) {
+            event.preventDefault(); // необходимо для drop
+        }
+        event.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+    
+    static handleDrop(event) {
+        if (Task.draggedElement && Task.draggedElement !== event.target) {
+            const taskList = Task.draggedElement.closest('ul');
+            const tasks = Array.from(taskList.querySelectorAll('.task'));
+            const draggedIndex = tasks.indexOf(Task.draggedElement);
+            const targetIndex = tasks.indexOf(event.target);
+    
+            if (draggedIndex > -1 && targetIndex > -1) {
+                taskList.removeChild(Task.draggedElement);
+                if (draggedIndex > targetIndex) {
+                    taskList.insertBefore(Task.draggedElement, event.target);
+                } else {
+                    taskList.insertBefore(Task.draggedElement, event.target.nextSibling);
+                }
+                TaskManager.saveTasks();
+            }
+
+            TaskManager.updateTaskOrder();
+        }
+    
+        return false;
+    }
+    
+    static handleDragEnd(event) {
+        event.target.classList.remove('dragging');
+        Task.draggedElement = null;
     }
 }
 
@@ -104,6 +155,12 @@ class TaskManager {
         this.closeCategoryManagementButton.onclick = () => this.toggleCategoryManagement();
         this.overlay.onclick = () => this.toggleCategoryManagement();
 
+        this.sortByCategoryButton = document.getElementById('sortByCategoryButton');
+        this.sortByPriorityButton = document.getElementById('sortByPriorityButton');
+
+        this.sortByCategoryButton.onclick = () => this.sortByCategory();
+        this.sortByPriorityButton.onclick = () => this.sortByPriority();
+
         this.categories = [];
         this.taskStrorage = [];
         this.options = ['high', 'medium', 'low'];
@@ -132,6 +189,7 @@ class TaskManager {
         this.addCategory(taskCategory);
 
         const task = new Task(taskText, taskPriority, taskCategory);
+        TaskManager.taskStrorage.push(task);
         this.taskList.appendChild(task.createElement());
 
         this.resetInputs();
@@ -302,6 +360,33 @@ class TaskManager {
             option.value = category.name;
             this.categoriesList.appendChild(option);
         });
+    }
+
+    static sortByCategory() {
+        this.taskStrorage.sort((a, b) => a.category.name.localeCompare(b.category.name));
+        this.updateTaskList();
+    }
+
+    static sortByPriority() {
+        const priorityOrder = { high: 1, medium: 2, low: 3 };
+        this.taskStrorage.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        this.updateTaskList();
+    }
+
+    static updateTaskList() {
+        this.taskList.innerHTML = '';
+        this.taskStrorage.forEach(task => {
+            this.taskList.appendChild(task.createElement());
+        });
+    }
+
+    static updateTaskOrder() {
+        const taskItems = Array.from(this.taskList.querySelectorAll('.task'));
+        this.taskStrorage = taskItems.map(taskItem => {
+            const taskText = taskItem.querySelector('.taskText').textContent;
+            return this.taskStrorage.find(task => task.text === taskText);
+        });
+        this.saveTasks();
     }
 }
 

@@ -17,6 +17,34 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
+    margin: auto;
+    text-align: center;
+}
+
+.task-list-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.task-list-header .header-item {
+    flex: 1;
+    text-align: center;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+}
+.task-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+.task-item {
+    flex: 1;
     text-align: center;
 }
 
@@ -73,6 +101,15 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.controls button {
+    margin: 0 10px;
 }
 
 .task.completed {
