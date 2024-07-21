@@ -17,10 +17,8 @@ class Task {
         }
         this.taskItem.innerHTML = `
             <span class="taskText">${this.text}</span>
-            <div>
-                <select class='prioritySelector'>
-                    ${Task.createOptionElements(this.priority)}
-                </select>
+            <div class="taskProperties">
+                <span class='priorityText'>${this.priority}</span>
                 ${this.category ? `<span class='categoryLabel' style="background-color:${this.category.color}">${this.category.name}</span>` : ''}
                 <button class="deleteTaskButton">Delete</button>
                 <button class="editTaskButton">Edit</button>
@@ -44,7 +42,7 @@ class Task {
         taskItem.onclick = this.toggleTask;
         taskItem.querySelector('.deleteTaskButton').onclick = TaskManager.deleteTask;
         taskItem.querySelector('.editTaskButton').onclick = TaskManager.editTask;
-        taskItem.querySelector('.prioritySelector').addEventListener('change', TaskManager.changePriority);
+        //taskItem.querySelector('.prioritySelector').addEventListener('change', TaskManager.changePriority);
     }
 
     static toggleTask(event) {
@@ -249,13 +247,50 @@ class TaskManager {
         );
     }
 
-    static editTask(taskItem) {
-        this.editElement(
+    static editTask(event) {
+        const taskItem = event.target.closest('li')
+
+        TaskManager.editElement(
             { stopPropagation: () => {} },
             taskItem,
             'span',
             TaskManager.saveTasks
         );
+
+        TaskManager.editPriority(taskItem);
+    }
+
+    static editPriority(taskItem) {
+        const propertiesElement = taskItem.querySelector('.taskProperties')
+        const span = propertiesElement.querySelector('span');
+        const oldText = span.textContent;
+        const select = document.createElement('select');
+        select.classList.add('prioritySelector');
+
+        this.options.forEach( option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+            if (optionElement.textContent.toLowerCase() == oldText) {
+                optionElement.selected = true;
+            }
+            select.appendChild(optionElement);
+        })
+
+        taskItem.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                span.textContent = select.value.trim();
+                propertiesElement.replaceChild(span, select);
+                let task = TaskManager.taskStrorage.find(task => task.text == taskItem.querySelector('.taskText').textContent)
+                task.priority = select.value.trim();
+                TaskManager.saveTasks();
+            }
+        });
+
+        propertiesElement.appendChild(select);
+        propertiesElement.replaceChild(select, span);
+
+        taskItem.querySelector('.prioritySelector').addEventListener('change', TaskManager.changePriority);
     }
 
     static deleteCategory(categoryName) {
@@ -283,39 +318,6 @@ class TaskManager {
         TaskManager.saveTasks();
     }
 
-    static editTask(event) {
-        event.stopPropagation();
-        const taskItem = event.target.closest('li');
-        const taskSpan = taskItem.querySelector('span');
-        const oldText = taskSpan.textContent;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = oldText;
-
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                taskSpan.textContent = input.value.trim();
-                taskItem.replaceChild(taskSpan, input);
-                this.saveTasks();
-            }
-        });
-
-        taskItem.replaceChild(input, taskSpan);
-        input.focus();
-
-        this.editElement(
-            { stopPropagation: () => {} },
-            categoryItem,
-            '.category-label',
-            () => {
-                const newCategoryName = categoryItem.querySelector('.category-label').textContent.trim();
-                category.name = newCategoryName;
-                this.saveCategories();
-                this.loadCategories();
-            }
-        );
-    }
-
     static changePriority(event) {
         event.stopPropagation();
         const taskItem = event.target.closest('li');
@@ -324,13 +326,13 @@ class TaskManager {
     }
 
     static changeTaskPriority(taskItem, newPriority) {
-        Task.options.forEach(priority => taskItem.classList.remove(priority));
+        TaskManager.options.forEach(priority => taskItem.classList.remove(priority));
         taskItem.classList.add(newPriority);
         this.saveTasks();
     }
 
     static saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(this.taskStrorage));
+        localStorage.setItem('tasks', JSON.stringify(TaskManager.taskStrorage));
     }
 
     static saveCategories() {
