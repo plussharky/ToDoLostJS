@@ -59,7 +59,12 @@ class Task {
     }
 
     static toggleTask(event) {
-        event.target.closest('li').classList.toggle('completed');
+        let taskItem = event.target.closest('li');
+        taskItem.classList.toggle('completed');
+        const taskId = taskItem.querySelector('.taskId').textContent;
+        let task = TaskManager.taskStrorage.find(task => task.id == taskId)
+        task.completed = !task.completed;
+        TaskManager.saveTasks();
     }
 
     static addDragEventListeners(taskItem) {
