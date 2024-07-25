@@ -1,12 +1,24 @@
+function generateGUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 class Task {
     static draggedElement = null;
 
-    constructor(text, priority = 'medium', category = '', completed = false) {
+    constructor(id, text, priority = 'medium', category = '', completed = false) {
         this.text = text;
         this.priority = priority;
         this.category = category;
         this.completed = completed;
         this.taskItem = null;
+        this.id = id;
+        if (!id) {
+            this.id = TaskManager.getTaskGuid();
+        } 
     }
 
     createElement() {
@@ -17,6 +29,7 @@ class Task {
         }
         this.taskItem.innerHTML = `
             <span class="taskText">${this.text}</span>
+            <span class="taskId hidden">${this.id}</span>
             <div class="taskProperties">
                 <span class='priorityText'>${this.priority}</span>
                 ${this.category ? `<span class='categoryLabel' style="background-color:${this.category.color}">${this.category.name}</span>` : ''}
@@ -186,7 +199,7 @@ class TaskManager {
 
         this.addCategory(taskCategory);
 
-        const task = new Task(taskText, taskPriority, taskCategory);
+        const task = new Task(null, taskText, taskPriority, taskCategory);
         TaskManager.taskStrorage.push(task);
         this.taskList.appendChild(task.createElement());
 
@@ -250,18 +263,35 @@ class TaskManager {
     static editTask(event) {
         const taskItem = event.target.closest('li')
 
-        TaskManager.editElement(
-            { stopPropagation: () => {} },
-            taskItem,
-            'span',
-            TaskManager.saveTasks
-        );
-
+        TaskManager.editText(taskItem);
         TaskManager.editPriority(taskItem);
     }
 
+    static editText(taskItem) {
+        const span = taskItem.querySelector('.taskText');
+        const taskId = taskItem.querySelector('.taskId').textContent;
+        const oldText = span.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = oldText;
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                span.textContent = input.value.trim();
+                taskItem.replaceChild(span, input);
+                let task = TaskManager.taskStrorage.find(task => task.id == taskId)
+                task.text = input.value.trim();
+                TaskManager.saveTasks();
+            }
+        });
+
+        taskItem.replaceChild(input, span);
+        input.focus();
+    }
+
     static editPriority(taskItem) {
-        const propertiesElement = taskItem.querySelector('.taskProperties')
+        const propertiesElement = taskItem.querySelector('.taskProperties');
+        const taskId = taskItem.querySelector('.taskId').textContent;
         const span = propertiesElement.querySelector('span');
         const oldText = span.textContent;
         const select = document.createElement('select');
@@ -281,7 +311,7 @@ class TaskManager {
             if (e.key === 'Enter') {
                 span.textContent = select.value.trim();
                 propertiesElement.replaceChild(span, select);
-                let task = TaskManager.taskStrorage.find(task => task.text == taskItem.querySelector('.taskText').textContent)
+                let task = TaskManager.taskStrorage.find(task => task.id == taskId)
                 task.priority = select.value.trim();
                 TaskManager.saveTasks();
             }
@@ -342,7 +372,7 @@ class TaskManager {
     static loadTasks() {
         const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         tasks.forEach(taskData => {
-            const task = new Task(taskData.text, taskData.priority, taskData.category, taskData.completed);
+            const task = new Task(taskData.id ,taskData.text, taskData.priority, taskData.category, taskData.completed);
             this.taskList.appendChild(task.createElement());
             this.taskStrorage.push(task);
         });
@@ -389,6 +419,16 @@ class TaskManager {
             return this.taskStrorage.find(task => task.text === taskText);
         });
         this.saveTasks();
+    }
+
+    static getTaskGuid() {
+        let guid;
+        while(!guid){
+            let potensialGuid = generateGUID();
+            guid = TaskManager.taskStrorage.some(task => task.id == potensialGuid) ? null : potensialGuid;
+        }
+        
+        return guid;
     }
 }
 

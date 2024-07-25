@@ -10,6 +10,10 @@ body {
     box-sizing: border-box;
 }
 
+.hidden {
+    display: none;
+}
+
 .container {
     background: white;
     padding: 30px;
