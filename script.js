@@ -270,6 +270,7 @@ class TaskManager {
 
         TaskManager.editText(taskItem);
         TaskManager.editPriority(taskItem);
+        TaskManager.editTaskCategory(taskItem);
     }
 
     static editText(taskItem) {
@@ -292,6 +293,40 @@ class TaskManager {
 
         taskItem.replaceChild(input, span);
         input.focus();
+    }
+
+    static editTaskCategory(taskItem) {
+        const propertiesElement = taskItem.querySelector('.taskProperties');
+        const taskId = taskItem.querySelector('.taskId').textContent;
+        const span = propertiesElement.querySelector('.categoryLabel');
+        const oldText = span.textContent;
+        const select = document.createElement('select');
+
+        this.categories.forEach( category => {
+            const optionElement = document.createElement('option');
+            optionElement.value = category.name;
+            optionElement.textContent = category.name;
+            optionElement.style = `background-color:${category.color}`
+            if (optionElement.textContent.toLowerCase() == oldText.toLowerCase()) {
+                optionElement.selected = true;
+            }
+            select.appendChild(optionElement);
+        })
+
+        taskItem.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                span.textContent = select.value.trim();
+                const categoryColor = this.categories.find(category => category.name == select.value).color;
+                span.style = `background-color:${categoryColor}`
+                propertiesElement.replaceChild(span, select);
+                let task = TaskManager.taskStrorage.find(task => task.id == taskId)
+                task.category = select.value.trim();
+                TaskManager.saveTasks();
+            }
+        });
+        
+        propertiesElement.appendChild(select);
+        propertiesElement.replaceChild(select, span);
     }
 
     static editPriority(taskItem) {
