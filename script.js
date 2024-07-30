@@ -281,18 +281,20 @@ class TaskManager {
         input.type = 'text';
         input.value = oldText;
 
+        taskItem.replaceChild(input, span);
+        input.focus();
+
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                span.textContent = input.value.trim();
                 taskItem.replaceChild(span, input);
+                span.textContent = input.value.trim();
                 let task = TaskManager.taskStrorage.find(task => task.id == taskId)
                 task.text = input.value.trim();
                 TaskManager.saveTasks();
             }
         });
 
-        taskItem.replaceChild(input, span);
-        input.focus();
+        
     }
 
     static editTaskCategory(taskItem) {
@@ -315,10 +317,10 @@ class TaskManager {
 
         taskItem.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                propertiesElement.replaceChild(span, select);
                 span.textContent = select.value.trim();
                 const categoryColor = this.categories.find(category => category.name == select.value).color;
                 span.style = `background-color:${categoryColor}`
-                propertiesElement.replaceChild(span, select);
                 let task = TaskManager.taskStrorage.find(task => task.id == taskId)
                 task.category = select.value.trim();
                 TaskManager.saveTasks();
@@ -349,8 +351,8 @@ class TaskManager {
 
         taskItem.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                span.textContent = select.value.trim();
                 propertiesElement.replaceChild(span, select);
+                span.textContent = select.value.trim();
                 let task = TaskManager.taskStrorage.find(task => task.id == taskId)
                 task.priority = select.value.trim();
                 TaskManager.saveTasks();
